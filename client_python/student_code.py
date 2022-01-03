@@ -125,6 +125,7 @@ while client.is_running() == 'true':
 
     # draw edges
     # i want to make changes
+    # another changes
     for e in graph.Edges:
         # find the edge nodes
         src = next(n for n in graph.Nodes if n.id == e.src)
