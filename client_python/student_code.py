@@ -82,6 +82,21 @@ The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
 print(client.get_agents())
+
+
+def line(pokemon):
+    for e in graph.Edges:
+        src1 = None
+        dest1 = None
+        for n in graph.Nodes:
+            if n.id == e.src:
+                src1 = n
+            if n.id == e.dest:
+                dest1 = n
+        m = (src1.pos.y - dest1.pos.y) / (src1.pos.x - dest1.pos.x)
+        if dest1.pos.y == m*(dest1.pos.x - pokemon.pos.x)+pokemon.pos.y:
+            return src1, dest1
+    return -1
 while client.is_running() == 'true':
     pokemons = json.loads(client.get_pokemons(),
                           object_hook=lambda d: SimpleNamespace(**d)).Pokemons
