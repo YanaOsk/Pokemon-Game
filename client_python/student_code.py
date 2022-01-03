@@ -139,6 +139,9 @@ while client.is_running() == 'true':
         screen.blit(id_srf, rect)
 
     # draw edges
+    # i want to make changes
+    # another changes
+    # jknkgjrh
     for e in graph.Edges:
         # find the edge nodes
         src = next(n for n in graph.Nodes if n.id == e.src)
