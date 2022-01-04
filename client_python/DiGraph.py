@@ -14,7 +14,7 @@ class DiGraph:
     def __copy__(self, other):
          """todo implement me"""
 
-    def v_size() -> int:
+    def v_size(self) -> int:
        return self.numOfVertices
 
     def e_size(self) -> int:
