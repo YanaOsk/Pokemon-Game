@@ -5,6 +5,9 @@ Very simple GUI example for python client to communicates with the server and "p
 """
 import math
 from types import SimpleNamespace
+
+from fontTools.misc.bezierTools import epsilon
+
 from client import Client
 import json
 from pygame import gfxdraw
@@ -29,10 +32,9 @@ pygame.font.init()
 client = Client()
 client.start_connection(HOST, PORT)
 
-pokemons = client.get_pokemons()
+"""
 pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
-
-print(pokemons)
+"""
 
 graph_json = client.get_graph()
 
@@ -44,24 +46,10 @@ graph_Algo = GraphAlgo()
 graph_Algo.load_from_dict(graph)
 start = graph_Algo.centerPoint().id
 
-
-pokemons = client.get_pokemons()
-pokemons2 = json.loads(pokemons)
-pokemons_List=[]
-
-def load_from_pokemon_dict(dict: dict) -> bool:
-    flag = False
-    for k in dict['Pokemons']:
-            n = (k['Pokemon']['pos'].split(","))
-            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
-            pokemons_List.append(pok)
-            flag = True
-    return flag
-
-
+print("graph_Algo = ", graph_Algo)
 
 for n in graph_Algo.get_graph().vertices.values():
-    x, y= n.pos
+    x, y = n.pos
     n.pos = (float(x), float(y))
 
 
@@ -95,13 +83,13 @@ def max_y():
         if i.pos[1] > max_y:
             max_y = i.pos[1]
     return max_y
- # get data proportions
+
+
+# get data proportions
 min_x = min_x()
 min_y = min_y()
 max_x = max_x()
 max_y = max_y()
-
-
 
 
 def scale(data, min_screen, max_screen, min_data, max_data):
@@ -109,7 +97,7 @@ def scale(data, min_screen, max_screen, min_data, max_data):
     get the scaled data with proportions min_data, max_data
     relative to min and max screen dimentions
     """
-    return ((data - min_data) / (max_data-min_data)) * (max_screen - min_screen) + min_screen
+    return ((data - min_data) / (max_data - min_data)) * (max_screen - min_screen) + min_screen
 
 
 # decorate scale with the correct values
@@ -118,18 +106,18 @@ def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
     if y:
-        return scale(data, 50, screen.get_height()-50, min_y, max_y)
+        return scale(data, 50, screen.get_height() - 50, min_y, max_y)
 
 
 radius = 15
 
-
 dict3 = json.loads(client.get_info())
-numOfAgent = dict3['GameServer']['agents']
-for i in range(numOfAgent):
-    c = "{\"id\":" + str(start+i) + "}"
-    client.add_agent(c)
 
+numOfAgent = dict3['GameServer']['agents']
+
+for i in range(numOfAgent):
+    c = "{\"id\":" + str(start + i) + "}"
+    client.add_agent(c)
 
 # this commnad starts the server - the game is running now
 client.start()
@@ -138,22 +126,40 @@ client.start()
 The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
+# print(type(client.get_agents()))
+# print(type(client.get_graph()))
 
+# print("zur1: ",type(zur1))
+# print(zur1)
 
 while client.is_running() == 'true':
+    pokemons_List = []
+    pokemons = client.get_pokemons()
+    pokemons2 = json.loads(pokemons)
 
-    pokemons = json.loads(client.get_pokemons(),object_hook=lambda d: SimpleNamespace(**d)).Pokemons
-    pokemons = [p.Pokemon for p in pokemons]
 
-    for p in pokemons:
-        x, y, _ = p.pos.split(',')
-        p.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
+    def load_from_pokemon_dict(dict: dict) -> bool:
+        flag = False
+        for k in dict['Pokemons']:
+            n = (k['Pokemon']['pos'].split(","))
+            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
+            pokemons_List.append(pok)
+            flag = True
+        return flag
 
-    agents = json.loads(client.get_agents(),object_hook=lambda d: SimpleNamespace(**d)).Agents
+
+    load_from_pokemon_dict(pokemons2)
+
+    for p in pokemons_List:
+        x, y = p.pos
+        p.pos = (my_scale(float(x), x=True), my_scale(float(y), y=True))
+
+    agents = json.loads(client.get_agents(), object_hook=lambda d: SimpleNamespace(**d)).Agents
     agents = [agent.Agent for agent in agents]
-
     for a in agents:
-        x, y,_ = a.pos.split(',')
+        x, y, _ = a.pos.split(',')
+        # print("x = ",x)
+        # print("y = ", y)
         a.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
     # check events
     for event in pygame.event.get():
@@ -169,7 +175,7 @@ while client.is_running() == 'true':
         x = my_scale(n.pos[0], x=True)
         y = my_scale(n.pos[1], y=True)
 
-        # its just to get a nice antialias circle
+        # its just to get a nice antialiased circle
         gfxdraw.filled_circle(screen, int(x), int(y),
                               radius, Color(64, 80, 174))
         gfxdraw.aacircle(screen, int(x), int(y),
@@ -201,16 +207,62 @@ while client.is_running() == 'true':
     for agent in agents:
         pygame.draw.circle(screen, Color(122, 61, 23),
                            (int(agent.pos.x), int(agent.pos.y)), 10)
-    # draw Pokemon's (note: should differ (GUI wise) between the up and the down Pokemon's (currently they are marked
-    # in the same way).
-    for p in pokemons:
-        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.pos.x), int(p.pos.y)), 10)
+    # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
+    for p in pokemons_List:
+        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.pos[0]), int(p.pos[1])), 10)
 
     # update screen changes
     display.update()
 
     # refresh rate
     clock.tick(60)
+
+
+    def line(pokemon):
+        src1 = 0
+        dest1 = 0
+        flag = True
+        for v in graph_Algo.get_graph().vertices.values():  ## here we get the node object
+            for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):  ## here we get
+                y2 = v.pos[1]
+                y1 = graph_Algo.get_graph().get_all_v()[e].pos[1]
+                x2 = v.pos[0]
+                x1 = graph_Algo.get_graph().get_all_v()[e].pos[0]
+                y3 = pokemon.pos[1]
+                x3 = pokemon.pos[0]
+                crossproduct = (y3 - y1) * (x2 - x1) - (x3 - x1) * (y2 - y1)
+                if abs(crossproduct) > epsilon:
+                    flag = False
+                dotproduct = (x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)
+                if dotproduct < 0:
+                    flag = False
+                sqaurw = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+                if dotproduct > sqaurw:
+                    flag = False
+                if flag == True:
+                    return v.id , e
+                #
+                #
+                # m = abs(y2 - y1) / abs(x2 - x1)
+                # a = abs(y3 - y1)
+                # b = abs(m * (x3 - x1))
+                # if a == b:
+                #     return v.id, e
+        return -1
+
+        # for e in graph.Edges:
+        #     src1 = None
+        #     dest1 = None
+        #     for n in graph_Algo.get_graph().vertices.values():
+        #         if n.id == e.src:
+        #             src1 = n
+        #         if n.id == e.dest:
+        #             dest1 = n
+        #     m = (src1.pos.y - dest1.pos.y) / (src1.pos.x - dest1.pos.x)
+        #     if dest1.pos.y == m * (dest1.pos.x - pokemon.pos.x) + pokemon.pos.y:
+        #         return src1, dest1
+        # return -1
+
 
     # choose next edge
     for agent in agents:
@@ -228,14 +280,39 @@ while client.is_running() == 'true':
             #             cost = cost(p, agent)
             # insert p to agent
             # then flag p are inserted
+            for p in pokemons_List:
+                print("line(p)", line(p))
+                zur, yana = line(p)
+                if p.type == -1:
+                    if zur < yana:
+                        ab, ba = graph_Algo.shortest_path(agent.src, yana)
+                        a = -1
+                        next_node = ba[a + 1].id
+                        a += 1
+                    if yana < zur:
+                        ab, ba = graph_Algo.shortest_path(agent.src, zur)
+                        a = -1
+                        next_node = ba[a + 1].id
+                        a += 1
+                if p.type == 1:
+                    if zur < yana:
+                        ab, ba = graph_Algo.shortest_path(agent.src, zur)
+                        a = -1
+                        next_node = ba[a + 1].id
+                        a += 1
+                    if yana < zur:
+                        ab, ba = graph_Algo.shortest_path(agent.src, yana)
+                        a = -1
+                        next_node = ba[a + 1].id
+                        a += 1
 
-            next_node = (agent.src - 1) % len(graph_Algo.get_graph().vertices.values())
-            client.choose_next_edge('{"agent_id":'+str(agent.id)+', "next_node_id":'+str(next_node)+'}')
-            ttl = client.time_to_end()
-            print(ttl, client.get_info())
+                client.choose_next_edge('{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(next_node) + '}')
+                ttl = client.time_to_end()
+                print(ttl, client.get_info())
 
     client.move()
-########################### OUR FUNCTIONS ###################################################
+
+
 def cost(p, a):
     cost = -1
     x, y = line(p)
@@ -255,24 +332,5 @@ def cost(p, a):
             b, c = graph_Algo.shortest_path(a.src, y)
             cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
     return cost
-
-def line(pokemon):
-    for e in graph.Edges:
-        src1 = None
-        dest1 = None
-        for n in graph.Nodes:
-            if n.id == e.src:
-                src1 = n
-            if n.id == e.dest:
-                dest1 = n
-        m = (src1.pos.y - dest1.pos.y) / (src1.pos.x - dest1.pos.x)
-        if dest1.pos.y == m * (dest1.pos.x - pokemon.pos.x) + pokemon.pos.y:
-            return src1, dest1
-    return -1
-
-##############################################################################
-
-
-
 
 # game over:
