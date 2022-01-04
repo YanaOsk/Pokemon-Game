@@ -6,46 +6,67 @@ import pygame
 from pygame import Color, gfxdraw
 from pygame.constants import RESIZABLE
 from typing import List
-from src.GraphAlgoInterface import GraphAlgoInterface
-from src.GraphInterface import GraphInterface
-from src.NodeData import Node
-from src.DiGraph import DiGraph
+from NodeData import Node
+from DiGraph import DiGraph
 import json
 from itertools import permutations
 
 
-class GraphAlgo(GraphAlgoInterface):
+class GraphAlgo:
 
     def __init__(self, g: DiGraph = DiGraph):
         self.graph = g
 
-    def get_graph(self) -> GraphInterface:
+    def get_graph(self):
         """
         zur's implementation
         :return:
         """
         return self.graph
 
-    def load_from_json(self, file_name: str) -> bool:
+    # def load_from_dict(self, file_name: str) -> bool:
+    #     flag = False
+    #     try:
+    #         # with open(file_name, "r") as f:
+    #         #     graph = DiGraph()
+    #         #     dict = json.load(f)
+    #             for k in dict['Nodes']:
+    #                 if len(k) == 1:
+    #                     node = Node(k['id'])
+    #                 else:
+    #                     n = (k['pos'].split(","))
+    #                     node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
+    #                 graph.add_node(node.id, node.pos)
+    #             for e in dict['Edges']:
+    #                 src = e['src']
+    #                 dest = e['dest']
+    #                 weight = e['w']
+    #                 graph.add_edge(src, dest, weight)
+    #             self.graph = graph
+    #             flag = True
+    #     except IOError as e:
+    #         print(e)
+    #     return True
+
+    def load_from_dict(self, dict: dict) -> bool:
         flag = False
         try:
-            with open(file_name, "r") as f:
-                graph = DiGraph()
-                dict = json.load(f)
-                for k in dict['Nodes']:
-                    if len(k) == 1:
-                        node = Node(k['id'])
-                    else:
-                        n = (k['pos'].split(","))
-                        node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
-                    graph.add_node(node.id, node.pos)
-                for e in dict['Edges']:
-                    src = e['src']
-                    dest = e['dest']
-                    weight = e['w']
-                    graph.add_edge(src, dest, weight)
-                self.graph = graph
-                flag = True
+            # with open(file_name, "r") as f:
+            #     graph = DiGraph()
+            #     dict = json.load(f)
+            for k in dict['Nodes']:
+                if len(k) == 1:
+                    node = Node(k['id'])
+                else:
+                    n = (k['pos'].split(","))
+                    node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
+                self.graph.add_node(node_id=node.id, pos=node.pos)
+            for e in dict['Edges']:
+                src = e['src']
+                dest = e['dest']
+                weight = e['w']
+                self.graph.add_edge(src, dest, weight)
+            flag = True
         except IOError as e:
             print(e)
         return True

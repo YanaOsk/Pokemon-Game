@@ -1,10 +1,9 @@
 import copy
 
-from src.GraphInterface import GraphInterface
-from src.NodeData import Node
+from NodeData import Node
 
 
-class DiGraph(GraphInterface):
+class DiGraph:
 
     def __init__(self):
         self.numOfVertices = 0
@@ -165,7 +164,7 @@ class DiGraph(GraphInterface):
 
 
     def __str__(self):
-        return f"{self.vertices},{self.numOfVertices},{self.numOfEdges},{self.countMc}"
+        return f"Nodes :{self.vertices},numofVertices :{self.numOfVertices},numofEdges :{self.numOfEdges},mc :{self.countMc}"
 
     def __repr__(self):
-        return f"{self.vertices},{self.numOfVertices},{self.numOfEdges},{self.countMc}"
+        return f"Nodes :{self.vertices},numofVertices :{self.numOfVertices},numofEdges :{self.numOfEdges},mc :{self.countMc}"
