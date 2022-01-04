@@ -11,6 +11,7 @@ from pygame import gfxdraw
 import pygame
 from pygame import *
 from GraphAlgo import GraphAlgo
+from pokimon import pokimon
 
 # init pygame
 WIDTH, HEIGHT = 1080, 720
@@ -42,7 +43,20 @@ graph = json.loads(graph_json)
 graph_Algo = GraphAlgo()
 graph_Algo.load_from_dict(graph)
 start = graph_Algo.centerPoint().id
-print("graph_Algo = ",graph_Algo)
+
+
+pokemons = client.get_pokemons()
+pokemons2 = json.loads(pokemons)
+pokemons_List=[]
+
+def load_from_pokemon_dict(dict: dict) -> bool:
+    flag = False
+    for k in dict['Pokemons']:
+            n = (k['Pokemon']['pos'].split(","))
+            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
+            pokemons_List.append(pok)
+            flag = True
+    return flag
 
 
 
@@ -54,9 +68,6 @@ for n in graph_Algo.get_graph().vertices.values():
 def min_x():
     min_x = 99999999999
     for i in graph_Algo.get_graph().get_all_v().values():
-
-        print("min_x",min_x)
-        print("i.pos[0]", i.pos[0])
         if i.pos[0] < min_x:
             min_x = i.pos[0]
     return min_x
@@ -114,9 +125,7 @@ radius = 15
 
 
 dict3 = json.loads(client.get_info())
-
 numOfAgent = dict3['GameServer']['agents']
-
 for i in range(numOfAgent):
     c = "{\"id\":" + str(start+i) + "}"
     client.add_agent(c)
@@ -129,25 +138,22 @@ client.start()
 The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
-# print(type(client.get_agents()))
-# print(type(client.get_graph()))
 
-# print("zur1: ",type(zur1))
-# print(zur1)
 
 while client.is_running() == 'true':
+
     pokemons = json.loads(client.get_pokemons(),object_hook=lambda d: SimpleNamespace(**d)).Pokemons
     pokemons = [p.Pokemon for p in pokemons]
 
     for p in pokemons:
         x, y, _ = p.pos.split(',')
         p.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
+
     agents = json.loads(client.get_agents(),object_hook=lambda d: SimpleNamespace(**d)).Agents
     agents = [agent.Agent for agent in agents]
+
     for a in agents:
         x, y,_ = a.pos.split(',')
-        # print("x = ",x)
-        # print("y = ", y)
         a.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
     # check events
     for event in pygame.event.get():
@@ -163,7 +169,7 @@ while client.is_running() == 'true':
         x = my_scale(n.pos[0], x=True)
         y = my_scale(n.pos[1], y=True)
 
-        # its just to get a nice antialiased circle
+        # its just to get a nice antialias circle
         gfxdraw.filled_circle(screen, int(x), int(y),
                               radius, Color(64, 80, 174))
         gfxdraw.aacircle(screen, int(x), int(y),
@@ -195,7 +201,8 @@ while client.is_running() == 'true':
     for agent in agents:
         pygame.draw.circle(screen, Color(122, 61, 23),
                            (int(agent.pos.x), int(agent.pos.y)), 10)
-    # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
+    # draw Pokemon's (note: should differ (GUI wise) between the up and the down Pokemon's (currently they are marked
+    # in the same way).
     for p in pokemons:
         pygame.draw.circle(screen, Color(0, 255, 255), (int(p.pos.x), int(p.pos.y)), 10)
 
@@ -228,7 +235,7 @@ while client.is_running() == 'true':
             print(ttl, client.get_info())
 
     client.move()
-
+########################### OUR FUNCTIONS ###################################################
 def cost(p, a):
     cost = -1
     x, y = line(p)
@@ -263,7 +270,7 @@ def line(pokemon):
             return src1, dest1
     return -1
 
-
+##############################################################################
 
 
 
