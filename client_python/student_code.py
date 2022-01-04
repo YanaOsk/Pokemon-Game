@@ -219,8 +219,14 @@ while client.is_running() == 'true':
 
 
     def line(pokemon):
-        src1 = 0
-        dest1 = 0
+
+        """
+        לקחתי את הקוד מהקישור הזה :  https://stackoverflow.com/questions/328107/how-can-you-determine-a-point-is-between-two-other-points-on-a-line-segment
+        יש שם את האפסילון שהבועז דיבר עליו 
+
+        :param pokemon:
+        :return:
+        """
         flag = True
         for v in graph_Algo.get_graph().vertices.values():  ## here we get the node object
             for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):  ## here we get
