@@ -31,11 +31,11 @@ class GraphAlgo:
             #     graph = DiGraph()
             #     dict = json.load(f)
                 for k in dict['Nodes']:
-                    if len(k) == 1:
-                        node = Node(k['id'])
-                    else:
-                        n = (k['pos'].split(","))
-                        node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
+
+                    n = (k['pos'].split(","))
+                    print("n =",n)
+                    node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
+                    print("node =", node)
                     self.graph.add_node(node_id = node.id, pos = node.pos)
                 for e in dict['Edges']:
                     src = e['src']
