@@ -14,39 +14,15 @@ from itertools import permutations
 
 class GraphAlgo:
 
-    def __init__(self, g: DiGraph = DiGraph):
+    def __init__(self, g: DiGraph = DiGraph()):
         self.graph = g
 
-    def get_graph(self):
+    def get_graph(self) -> DiGraph:
         """
         zur's implementation
         :return:
         """
         return self.graph
-
-    # def load_from_dict(self, file_name: str) -> bool:
-    #     flag = False
-    #     try:
-    #         # with open(file_name, "r") as f:
-    #         #     graph = DiGraph()
-    #         #     dict = json.load(f)
-    #             for k in dict['Nodes']:
-    #                 if len(k) == 1:
-    #                     node = Node(k['id'])
-    #                 else:
-    #                     n = (k['pos'].split(","))
-    #                     node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
-    #                 graph.add_node(node.id, node.pos)
-    #             for e in dict['Edges']:
-    #                 src = e['src']
-    #                 dest = e['dest']
-    #                 weight = e['w']
-    #                 graph.add_edge(src, dest, weight)
-    #             self.graph = graph
-    #             flag = True
-    #     except IOError as e:
-    #         print(e)
-    #     return True
 
     def load_from_dict(self, dict: dict) -> bool:
         flag = False
@@ -54,19 +30,19 @@ class GraphAlgo:
             # with open(file_name, "r") as f:
             #     graph = DiGraph()
             #     dict = json.load(f)
-            for k in dict['Nodes']:
-                if len(k) == 1:
-                    node = Node(k['id'])
-                else:
+                for k in dict['Nodes']:
+
                     n = (k['pos'].split(","))
+                    print("n =",n)
                     node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
-                self.graph.add_node(node_id=node.id, pos=node.pos)
-            for e in dict['Edges']:
-                src = e['src']
-                dest = e['dest']
-                weight = e['w']
-                self.graph.add_edge(src, dest, weight)
-            flag = True
+                    print("node =", node)
+                    self.graph.add_node(node_id = node.id, pos = node.pos)
+                for e in dict['Edges']:
+                    src = e['src']
+                    dest = e['dest']
+                    weight = e['w']
+                    self.graph.add_edge(src, dest, weight)
+                flag = True
         except IOError as e:
             print(e)
         return True
@@ -185,11 +161,12 @@ class GraphAlgo:
         return (path, min_path)
 
     def centerPoint(self) -> (int, float):
+
         matrix = self.floydWarshall(self.graph)
         maxPath = []
-        for i in range(self.graph.v_size()):
+        for i in range(self.graph.numOfVertices):
             maxPath.append(0)
-            for j in range(self.graph.v_size()):
+            for j in range(self.graph.numOfVertices):
                 if matrix[i][j] > maxPath[i]:
                     maxPath[i] = matrix[i][j]
         min = math.inf
@@ -212,7 +189,6 @@ class GraphAlgo:
 
     def floydWarshall(self, a: DiGraph = DiGraph):
         matrix = []
-
         for i in range(a.numOfVertices):
             matrix.append([])
             for j in range(a.numOfVertices):
@@ -225,9 +201,9 @@ class GraphAlgo:
             for j in range(a.numOfVertices):
                 if a.all_out_edges_of_node(i).__contains__(j):
                     matrix[i][j] = a.all_out_edges_of_node(i).get(j)
-        for i in range(a.v_size()):
-            for j in range(a.v_size()):
-                for k in range(a.v_size()):
+        for i in range(a.numOfVertices):
+            for j in range(a.numOfVertices):
+                for k in range(a.numOfVertices):
                     if matrix[j][k] > matrix[j][i] + matrix[i][k]:
                         matrix[j][k] = matrix[j][i] + matrix[i][k]
         return matrix
@@ -344,6 +320,5 @@ class GraphAlgo:
 
     def __repr__(self):
         return f"{self.graph}"
-
 
 

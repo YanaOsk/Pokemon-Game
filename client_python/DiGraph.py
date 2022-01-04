@@ -1,5 +1,4 @@
 import copy
-
 from NodeData import Node
 
 
@@ -89,6 +88,8 @@ class DiGraph:
         :param pos:
         :return:
         """
+        # print("int = ",node_id)
+        # print("pos = ",pos)
         if node_id not in self.vertices:
             node = Node(node_id, pos)
             self.vertices[node_id] = node
@@ -164,7 +165,7 @@ class DiGraph:
 
 
     def __str__(self):
-        return f"Nodes :{self.vertices},numofVertices :{self.numOfVertices},numofEdges :{self.numOfEdges},mc :{self.countMc}"
+        return f"{self.vertices},{self.numOfVertices},{self.numOfEdges},{self.countMc}"
 
     def __repr__(self):
-        return f"Nodes :{self.vertices},numofVertices :{self.numOfVertices},numofEdges :{self.numOfEdges},mc :{self.countMc}"
+        return f"{self.vertices},{self.numOfVertices},{self.numOfEdges},{self.countMc}"

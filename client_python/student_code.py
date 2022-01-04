@@ -3,6 +3,7 @@
 OOP - Ex4
 Very simple GUI example for python client to communicates with the server and "play the game!"
 """
+import math
 from types import SimpleNamespace
 from client import Client
 import json
@@ -10,7 +11,6 @@ from pygame import gfxdraw
 import pygame
 from pygame import *
 from GraphAlgo import GraphAlgo
-from DiGraph import DiGraph
 
 # init pygame
 WIDTH, HEIGHT = 1080, 720
@@ -31,35 +31,74 @@ client.start_connection(HOST, PORT)
 pokemons = client.get_pokemons()
 pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 
-# print(pokemons)
+print(pokemons)
 
 graph_json = client.get_graph()
 
 FONT = pygame.font.SysFont('Arial', 20, bold=True)
 # load the json string into SimpleNamespace Object
 
-graph = json.loads(graph_json, object_hook=lambda json_dict: SimpleNamespace(**json_dict))
-#########################################################################################################
-
-for n in graph.Nodes:
-    x, y, _ = n.pos.split(',')
-    n.pos = SimpleNamespace(x=float(x), y=float(y))
-
-# get data proportions
-min_x = min(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
-min_y = min(list(graph.Nodes), key=lambda n: n.pos.y).pos.y
-max_x = max(list(graph.Nodes), key=lambda n: n.pos.x).pos.x
-max_y = max(list(graph.Nodes), key=lambda n: n.pos.y).pos.y
+graph = json.loads(graph_json)
+graph_Algo = GraphAlgo()
+graph_Algo.load_from_dict(graph)
+start = graph_Algo.centerPoint().id
+print("graph_Algo = ",graph_Algo)
 
 
-########################################################################################################
+
+for n in graph_Algo.get_graph().vertices.values():
+    x, y= n.pos
+    n.pos = (float(x), float(y))
+
+
+def min_x():
+    min_x = 99999999999
+    for i in graph_Algo.get_graph().get_all_v().values():
+
+        print("min_x",min_x)
+        print("i.pos[0]", i.pos[0])
+        if i.pos[0] < min_x:
+            min_x = i.pos[0]
+    return min_x
+
+
+def min_y():
+    min_y = 99999999999
+    for i in graph_Algo.get_graph().get_all_v().values():
+        if i.pos[1] < min_y:
+            min_y = i.pos[1]
+    return min_y
+
+
+def max_x():
+    max_x = 0
+    for i in graph_Algo.get_graph().get_all_v().values():
+        if i.pos[0] > max_x:
+            max_x = i.pos[0]
+    return max_x
+
+
+def max_y():
+    max_y = 0
+    for i in graph_Algo.get_graph().get_all_v().values():
+        if i.pos[1] > max_y:
+            max_y = i.pos[1]
+    return max_y
+ # get data proportions
+min_x = min_x()
+min_y = min_y()
+max_x = max_x()
+max_y = max_y()
+
+
+
 
 def scale(data, min_screen, max_screen, min_data, max_data):
     """
     get the scaled data with proportions min_data, max_data
     relative to min and max screen dimentions
     """
-    return ((data - min_data) / (max_data - min_data)) * (max_screen - min_screen) + min_screen
+    return ((data - min_data) / (max_data-min_data)) * (max_screen - min_screen) + min_screen
 
 
 # decorate scale with the correct values
@@ -68,33 +107,16 @@ def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
     if y:
-        return scale(data, 50, screen.get_height() - 50, min_y, max_y)
+        return scale(data, 50, screen.get_height()-50, min_y, max_y)
 
 
-##############################################################################################
 radius = 15
 
-"""
-Here below i am going make some changes
- with the names of graph 
- |
-\/
-"""
-graph_digraph = DiGraph()
-graph_dict = json.loads(graph_json)
-graph_algo = GraphAlgo(graph_digraph)
-graph_algo.load_from_dict(graph_dict)
-start = graph_algo.centerPoint().id
 
-"""
-Here below we are updating the center
- and put there agents
- 
-    |
-   \ /
-"""
 dict3 = json.loads(client.get_info())
+
 numOfAgent = dict3['GameServer']['agents']
+
 for i in range(numOfAgent):
     c = "{\"id\":" + str(start+i) + "}"
     client.add_agent(c)
@@ -107,78 +129,26 @@ client.start()
 The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
+# print(type(client.get_agents()))
+# print(type(client.get_graph()))
 
-
-
-
-########################## OUR FUNCTIONS ####################################################################
-
-def line(pokemon):
-    for e in graph.Edges:
-        src1 = None
-        dest1 = None
-        for n in graph.Nodes:
-            if n.id == e.src:
-                src1 = n
-            if n.id == e.dest:
-                dest1 = n
-        m = (src1.pos.y - dest1.pos.y) / (src1.pos.x - dest1.pos.x)
-        if dest1.pos.y == m * (dest1.pos.x - pokemon.pos.x) + pokemon.pos.y:
-            return src1, dest1
-    return -1
-
-
-def cost(p, a):
-    cost = -1
-    x, y = line(p)
-    if p.type == -1:
-        if x < y:
-            b, c = graph_algo.shortest_path(a.src, y)
-            cost = (b + edge_weight(y, x)) / p.value
-        if y < x:
-            b, c = graph_algo.shortest_path(a.src, x)
-            cost = (b + edge_weight(x, y)) / p.value
-    if p.type == 1:
-        if x < y:
-            b, c = graph_algo.shortest_path(a.src, x)
-            cost = (b + edge_weight(x, y)) / p.value
-        if y < x:
-            b, c = graph_algo.shortest_path(a.src, y)
-            cost = (b + edge_weight(y, x)) / p.value
-    return cost
-
-
-def edge_weight(x, y):
-    for e in graph.Edges:
-        # The case if the edge is x---->y
-        if e.src == x and e.dest == y:
-            weight = e.w
-        # The case if the edge is y---->x
-        if e.src == y and e.dest == x:
-            weight = e.w
-
-    return weight
-
-
-##############################################################################################################
-
+# print("zur1: ",type(zur1))
+# print(zur1)
 
 while client.is_running() == 'true':
-
-    pokemons = json.loads(client.get_pokemons(), object_hook=lambda d: SimpleNamespace(**d)).Pokemons
+    pokemons = json.loads(client.get_pokemons(),object_hook=lambda d: SimpleNamespace(**d)).Pokemons
     pokemons = [p.Pokemon for p in pokemons]
 
     for p in pokemons:
         x, y, _ = p.pos.split(',')
         p.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
-
-    agents = json.loads(client.get_agents(), object_hook=lambda d: SimpleNamespace(**d)).Agents
+    agents = json.loads(client.get_agents(),object_hook=lambda d: SimpleNamespace(**d)).Agents
     agents = [agent.Agent for agent in agents]
-
     for a in agents:
-        x, y, _ = a.pos.split(',')
+        x, y,_ = a.pos.split(',')
+        # print("x = ",x)
+        # print("y = ", y)
         a.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
-
     # check events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -189,9 +159,9 @@ while client.is_running() == 'true':
     screen.fill(Color(0, 0, 0))
 
     # draw nodes
-    for n in graph.Nodes:
-        x = my_scale(n.pos.x, x=True)
-        y = my_scale(n.pos.y, y=True)
+    for n in graph_Algo.get_graph().vertices.values():
+        x = my_scale(n.pos[0], x=True)
+        y = my_scale(n.pos[1], y=True)
 
         # its just to get a nice antialiased circle
         gfxdraw.filled_circle(screen, int(x), int(y),
@@ -205,20 +175,21 @@ while client.is_running() == 'true':
         screen.blit(id_srf, rect)
 
     # draw edges
-    for e in graph.Edges:
-        # find the edge nodes
-        src = next(n for n in graph.Nodes if n.id == e.src)
-        dest = next(n for n in graph.Nodes if n.id == e.dest)
+    for v in graph_Algo.get_graph().vertices:
+        for e in graph_Algo.get_graph().all_out_edges_of_node(v):
+            # find the edge nodes
+            src = graph_Algo.get_graph().vertices[v]
+            dest = graph_Algo.get_graph().vertices[e]
 
-        # scaled positions
-        src_x = my_scale(src.pos.x, x=True)
-        src_y = my_scale(src.pos.y, y=True)
-        dest_x = my_scale(dest.pos.x, x=True)
-        dest_y = my_scale(dest.pos.y, y=True)
+            # scaled positions
+            src_x = my_scale(src.pos[0], x=True)
+            src_y = my_scale(src.pos[1], y=True)
+            dest_x = my_scale(dest.pos[0], x=True)
+            dest_y = my_scale(dest.pos[1], y=True)
 
-        # draw the line
-        pygame.draw.line(screen, Color(61, 72, 126),
-                         (src_x, src_y), (dest_x, dest_y))
+            # draw the line
+            pygame.draw.line(screen, Color(61, 72, 126),
+                             (src_x, src_y), (dest_x, dest_y))
 
     # draw agents
     for agent in agents:
@@ -237,11 +208,64 @@ while client.is_running() == 'true':
     # choose next edge
     for agent in agents:
         if agent.dest == -1:
-            next_node = (agent.src - 1) % len(graph.Nodes)
-            client.choose_next_edge(
-                '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(next_node) + '}')
+            # pokemon = None
+            # cost = math.inf
+            # for p in pokemons:
+            #     if p.flag != 1:
+            #         if pokemon == None:
+            #             pokemon = p
+            #             cost = cost(p ,agent )
+            #
+            #         if cost(p,agent) < cost:
+            #             pokemon = p
+            #             cost = cost(p, agent)
+            # insert p to agent
+            # then flag p are inserted
+
+            next_node = (agent.src - 1) % len(graph_Algo.get_graph().vertices.values())
+            client.choose_next_edge('{"agent_id":'+str(agent.id)+', "next_node_id":'+str(next_node)+'}')
             ttl = client.time_to_end()
             print(ttl, client.get_info())
 
     client.move()
+
+def cost(p, a):
+    cost = -1
+    x, y = line(p)
+    if p.type == -1:
+        if x < y:
+            b, c = graph_Algo.shortest_path(a.src, y)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
+
+        if y < x:
+            b, c = graph_Algo.shortest_path(a.src, x)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
+    if p.type == 1:
+        if x < y:
+            b, c = graph_Algo.shortest_path(a.src, x)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
+        if y < x:
+            b, c = graph_Algo.shortest_path(a.src, y)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
+    return cost
+
+def line(pokemon):
+    for e in graph.Edges:
+        src1 = None
+        dest1 = None
+        for n in graph.Nodes:
+            if n.id == e.src:
+                src1 = n
+            if n.id == e.dest:
+                dest1 = n
+        m = (src1.pos.y - dest1.pos.y) / (src1.pos.x - dest1.pos.x)
+        if dest1.pos.y == m * (dest1.pos.x - pokemon.pos.x) + pokemon.pos.y:
+            return src1, dest1
+    return -1
+
+
+
+
+
+
 # game over:
