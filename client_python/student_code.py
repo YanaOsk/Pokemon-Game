@@ -15,6 +15,27 @@ from GraphAlgo import GraphAlgo
 from pokimon import pokimon
 from agent import agent1
 
+
+####################### C L A S S    B U T T O N #########################
+class Button:
+    def __init__(self, rect: pygame.Rect, color, text, func=None):
+        self.rect = rect
+        self.color = color
+        self.text = text
+        self.func = func
+
+        self.is_clicked = False
+
+    def press(self):
+        self.is_clicked = not self.is_clicked
+
+
+button = Button(pygame.Rect((900, 650), (150, 50)), (250, 0, 0), "Stop the game")
+##########################################################################
+
+
+
+
 # init pygame
 WIDTH, HEIGHT = 1080, 720
 
@@ -27,6 +48,13 @@ pygame.init()
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
 clock = pygame.time.Clock()
 pygame.font.init()
+pok_image = pygame.image.load('pokpok.png')
+
+
+counter, text = 30, '30'.rjust(3)
+pygame.time.set_timer(pygame.USEREVENT, 1000)
+font = pygame.font.SysFont('Consolas', 30)
+
 
 client = Client()
 client.start_connection(HOST, PORT)
@@ -37,7 +65,7 @@ pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 
 graph_json = client.get_graph()
 
-FONT = pygame.font.SysFont('Arial', 20, bold=True)
+FONT = pygame.font.SysFont('comicsansms', 20, bold=True)
 # load the json string into SimpleNamespace Object
 
 graph = json.loads(graph_json)
@@ -125,11 +153,15 @@ client.start()
 The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
+
+
 # print(type(client.get_agents()))
 # print(type(client.get_graph()))
 
 # print("zur1: ",type(zur1))
 # print(zur1)
+
+
 
 while client.is_running() == 'true':
     pokemons_List = []
@@ -178,12 +210,24 @@ while client.is_running() == 'true':
 
     # check events
     for event in pygame.event.get():
+        if event.type == pygame.USEREVENT:
+            counter -= 1
+            text = str(counter).rjust(3) if counter > 0 else 'Game Over'
         if event.type == pygame.QUIT:
             pygame.quit()
             exit(0)
-
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if button.rect.collidepoint(event.pos):
+                button.func=client.stop_connection()
     # refresh surface
-    screen.fill(Color(0, 0, 0))
+    screen.fill(Color(243, 233, 0))
+    screen.blit(pok_image, (300, 10))
+    pygame.draw.rect(screen, button.color, button.rect)
+    button_text=FONT.render(button.text,True,(0,0,0))
+    text_to_end = FONT.render('Time to end :', True, (0, 0, 0))
+    screen.blit(button_text,(button.rect.x+15,button.rect.y+15))
+    screen.blit(font.render(text, True, (0, 0, 0)), (150, 40))
+    screen.blit(text_to_end,(30,40))
 
     # draw nodes
     for n in graph_Algo.get_graph().vertices.values():
@@ -313,7 +357,6 @@ while client.is_running() == 'true':
             # insert p to agent
             # then flag p are inserted
             for p in pokemons_List:
-                print("p.tag =", p.tag)
                 if p.tag == -1:
                     zur, yana = line(p)
                     if p.type == -1:
