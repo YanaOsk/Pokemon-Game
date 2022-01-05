@@ -1,25 +1,17 @@
+from filecmp import cmp
 
 class pokimon:
-    def __init__(self,value : int,type : int,pos : tuple):
+
+    def __init__(self,value : float,type : int,pos : tuple):
         self.value = value
         self.type = type
         self.pos = pos
         self.tag = -1
+        self.show_pos = pos
 
+    def __str__(self):
+        return f"{self.value},{self.type},{self.pos},{self.tag}"
 
+    def __repr__(self):
+        return f"{self.value},{self.type},{self.pos},{self.tag}"
 
-
-
-
-
-def load_from_dict(self, dict: dict) -> bool:
-    flag = False
-    try:
-        for k in dict['Pokemon']:
-            n = (k['pos'].split(","))
-            pokimon = pokimon(k['value'],k['type'], (float(n[0]), float(n[1])))
-            self.graph.add_node(node_id=node.id, pos=node.pos)
-        flag = True
-    except IOError as e:
-        print(e)
-    return True

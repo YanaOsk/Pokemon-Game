@@ -5,12 +5,16 @@ Very simple GUI example for python client to communicates with the server and "p
 """
 import math
 from types import SimpleNamespace
+from fontTools.misc.bezierTools import epsilon
 from client import Client
 import json
 from pygame import gfxdraw
 import pygame
 from pygame import *
 from GraphAlgo import GraphAlgo
+from pokimon import pokimon
+from agent import agent1
+
 
 # init pygame
 WIDTH, HEIGHT = 1080, 720
@@ -28,10 +32,12 @@ pygame.font.init()
 client = Client()
 client.start_connection(HOST, PORT)
 
-pokemons = client.get_pokemons()
-pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 
-print(pokemons)
+
+
+"""
+pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
+"""
 
 graph_json = client.get_graph()
 
@@ -42,6 +48,7 @@ graph = json.loads(graph_json)
 graph_Algo = GraphAlgo()
 graph_Algo.load_from_dict(graph)
 start = graph_Algo.centerPoint().id
+
 print("graph_Algo = ",graph_Algo)
 
 
@@ -54,9 +61,6 @@ for n in graph_Algo.get_graph().vertices.values():
 def min_x():
     min_x = 99999999999
     for i in graph_Algo.get_graph().get_all_v().values():
-
-        print("min_x",min_x)
-        print("i.pos[0]", i.pos[0])
         if i.pos[0] < min_x:
             min_x = i.pos[0]
     return min_x
@@ -155,19 +159,49 @@ def line(pokemon):
 
 
 while client.is_running() == 'true':
-    pokemons = json.loads(client.get_pokemons(),object_hook=lambda d: SimpleNamespace(**d)).Pokemons
-    pokemons = [p.Pokemon for p in pokemons]
+    pokemons_List = []
+    pokemons = client.get_pokemons()
+    pokemons2 = json.loads(pokemons)
 
-    for p in pokemons:
-        x, y, _ = p.pos.split(',')
-        p.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
-    agents = json.loads(client.get_agents(),object_hook=lambda d: SimpleNamespace(**d)).Agents
-    agents = [agent.Agent for agent in agents]
-    for a in agents:
-        x, y,_ = a.pos.split(',')
-        # print("x = ",x)
-        # print("y = ", y)
-        a.pos = SimpleNamespace(x=my_scale(float(x), x=True), y=my_scale(float(y), y=True))
+
+    def load_from_pokemon_dict(dict: dict) -> bool:
+        flag = False
+        for k in dict['Pokemons']:
+            n = (k['Pokemon']['pos'].split(","))
+            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
+            pokemons_List.append(pok)
+            flag = True
+        return flag
+
+
+    load_from_pokemon_dict(pokemons2)
+
+
+    for p in pokemons_List:
+        x, y = p.pos
+        p.show_pos = (my_scale(float(x), x=True), my_scale(float(y), y=True))
+
+    agents_list = []
+    agents = client.get_agents()
+    agents2 = json.loads(agents)
+    def load_from_agent_dict(dict: dict) -> bool:
+        flag = False
+        for k in dict['Agents']:
+
+            n = (k['Agent']['pos'].split(","))
+            age = agent1(k['Agent']['id'], k['Agent']['value'],k['Agent']['src'],k['Agent']['dest'],k['Agent']['speed'], (float(n[0]), float(n[1])))
+
+            agents_list.append(age)
+            flag = True
+        return flag
+
+
+    load_from_agent_dict(agents2)
+
+    for a in agents_list:
+        x, y = a.pos
+        a.show_pos = (my_scale(float(x), x=True), my_scale(float(y), y=True))
+
     # check events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -211,12 +245,12 @@ while client.is_running() == 'true':
                              (src_x, src_y), (dest_x, dest_y))
 
     # draw agents
-    for agent in agents:
-        pygame.draw.circle(screen, Color(122, 61, 23),
-                           (int(agent.pos.x), int(agent.pos.y)), 10)
+    for a in agents_list:
+        pygame.draw.circle(screen, Color(122, 61, 23),(int(a.show_pos[0]), int(a.show_pos[1])), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
-    for p in pokemons:
-        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.pos.x), int(p.pos.y)), 10)
+    for p in pokemons_List:
+
+        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
 
     # update screen changes
     display.update()
@@ -224,8 +258,47 @@ while client.is_running() == 'true':
     # refresh rate
     clock.tick(60)
 
+    def line(pokemon):
+
+        for v in graph_Algo.get_graph().vertices.values():
+            for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):
+                m = (v.pos[1] - graph_Algo.get_graph().get_all_v()[e].pos[1]) / (v.pos[0] - graph_Algo.get_graph().get_all_v()[e].pos[0])
+                if graph_Algo.get_graph().get_all_v()[e].pos[1] == m * (graph_Algo.get_graph().get_all_v()[e].pos[0] - pokemon.pos[0]) + pokemon.pos[1]:
+                    return v.id, e
+        return -1
+    # def line(pokemon):
+    #
+    #     flag = True
+    #     for v in graph_Algo.get_graph().vertices.values():  ## here we get the node object
+    #         for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):  ## here we get all the edges are going out for curent vertex
+    #             x1 = graph_Algo.get_graph().get_all_v()[e].pos[0]
+    #             y1 = graph_Algo.get_graph().get_all_v()[e].pos[1]
+    #             x2 = v.pos[0]
+    #             y2 = v.pos[1]
+    #             x3 = pokemon.pos[0]
+    #             y3 = pokemon.pos[1]
+    #             crossproduct = (y3 - y1) * (x2 - x1) - (x3 - x1) * (y2 - y1)
+    #             if abs(crossproduct) > epsilon:
+    #                 flag = False
+    #             dotproduct = (x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)
+    #             if dotproduct < 0:
+    #                 flag = False
+    #             sqaurw = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
+    #             if dotproduct > sqaurw:
+    #                 flag = False
+    #             if flag == True:
+    #                 return v.id, e
+    #             #
+    #             #
+    #             # m = abs(y2 - y1) / abs(x2 - x1)
+    #             # a = abs(y3 - y1)
+    #             # b = abs(m * (x3 - x1))
+    #             # if a == b:
+    #             #     return v.id, e
+    #     return -1
+
     # choose next edge
-    for agent in agents:
+    for agent in agents_list:
         if agent.dest == -1:
             # pokemon = None
             # cost = math.inf
@@ -240,11 +313,50 @@ while client.is_running() == 'true':
             #             cost = cost(p, agent)
             # insert p to agent
             # then flag p are inserted
+            for p in pokemons_List:
+                print("p.tag =",p.tag)
+                if p.tag == -1:
+                    zur,yana = line(p)
+                    if p.type == -1:
+                        if zur < yana:
+                            ab,ba = graph_Algo.shortest_path(agent.src,yana)
+                            a = 0
+                            if(a +1 < len(ba)):
+                                agent.next_node = ba[a + 1].id
+                                p.tag = 1
+                            else:
+                                agent.next_node = agent.src
 
-            next_node = (agent.src - 1) % len(graph_Algo.get_graph().vertices.values())
-            client.choose_next_edge('{"agent_id":'+str(agent.id)+', "next_node_id":'+str(next_node)+'}')
-            ttl = client.time_to_end()
-            print(ttl, client.get_info())
+                        if yana < zur:
+                            ab, ba = graph_Algo.shortest_path(agent.src, zur)
+                            a = 0
+                            if (a + 1 < len(ba)):
+                                agent.next_node = ba[a + 1].id
+                                p.tag = 1
+                            else:
+                                agent.next_node = agent.src
+                    if p.type == 1:
+                        if zur < yana:
+                            ab,ba = graph_Algo.shortest_path(agent.src,zur)
+                            a = 0
+                            if (a + 1 < len(ba)):
+                                agent.next_node = ba[a + 1].id
+                                p.tag = 1
+                            else:
+                                agent.next_node = agent.src
+                        if yana < zur:
+                            ab, ba = graph_Algo.shortest_path(agent.src, yana)
+                            a = 0
+                            if (a + 1 < len(ba)):
+                                agent.next_node = ba[a + 1].id
+                                p.tag = 1
+                            else:
+                                agent.next_node = agent.src
+                    print("p.tag1 =",p.tag)
+                print("agent id = ",agent.id,"what? =" , agent.next_node)
+                client.choose_next_edge('{"agent_id":'+str(agent.id)+', "next_node_id":'+str(agent.next_node)+'}')
+                ttl = client.time_to_end()
+                # print(ttl, client.get_info())
 
     client.move()
 
@@ -253,34 +365,24 @@ def cost(p, a):
     x, y = line(p)
     if p.type == -1:
         if x < y:
-            b, c = graph_algo.shortest_path(a.src, y)
-            cost = (b + graph_algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
+            b, c = graph_Algo.shortest_path(a.src, y)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
 
         if y < x:
             b, c = graph_algo.shortest_path(a.src, x)
-            cost = (b + graph_algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
     if p.type == 1:
         if x < y:
-            b, c = graph_algo.shortest_path(a.src, x)
-            cost = (b + graph_algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
+            b, c = graph_Algo.shortest_path(a.src, x)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
         if y < x:
-            b, c = graph_algo.shortest_path(a.src, y)
-            cost = (b + graph_algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
+            b, c = graph_Algo.shortest_path(a.src, y)
+            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
     return cost
 
-def line(pokemon):
-    for e in graph.Edges:
-        src1 = None
-        dest1 = None
-        for n in graph.Nodes:
-            if n.id == e.src:
-                src1 = n
-            if n.id == e.dest:
-                dest1 = n
-        m = (src1.pos.y - dest1.pos.y) / (src1.pos.x - dest1.pos.x)
-        if dest1.pos.y == m * (dest1.pos.x - pokemon.pos.x) + pokemon.pos.y:
-            return src1, dest1
-    return -1
+
+
+
 
 
 

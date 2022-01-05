@@ -33,9 +33,7 @@ class GraphAlgo:
                 for k in dict['Nodes']:
 
                     n = (k['pos'].split(","))
-                    print("n =",n)
                     node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
-                    print("node =", node)
                     self.graph.add_node(node_id = node.id, pos = node.pos)
                 for e in dict['Edges']:
                     src = e['src']
