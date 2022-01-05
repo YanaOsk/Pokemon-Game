@@ -7,9 +7,11 @@ class pokimon:
         self.type = type
         self.pos = pos
         self.tag = -1
+        self.show_pos = pos
 
     def __str__(self):
         return f"{self.value},{self.type},{self.pos},{self.tag}"
 
     def __repr__(self):
         return f"{self.value},{self.type},{self.pos},{self.tag}"
+
