@@ -3,6 +3,7 @@
 OOP - Ex4
 Very simple GUI example for python client to communicates with the server and "play the game!"
 """
+from math import *
 import math
 from types import SimpleNamespace
 from fontTools.misc.bezierTools import epsilon
@@ -48,9 +49,6 @@ graph = json.loads(graph_json)
 graph_Algo = GraphAlgo()
 graph_Algo.load_from_dict(graph)
 start = graph_Algo.centerPoint().id
-
-print("graph_Algo = ",graph_Algo)
-
 
 
 for n in graph_Algo.get_graph().vertices.values():
@@ -140,22 +138,29 @@ The GUI and the "algo" are mixed - refactoring using MVC design pattern is requi
 # print(zur1)
 
 while client.is_running() == 'true':
+
+
     pokemons_List = []
     pokemons = client.get_pokemons()
     pokemons2 = json.loads(pokemons)
 
 
+
+
     def load_from_pokemon_dict(dict: dict) -> bool:
         flag = False
-        for k in dict['Pokemons']:
-            n = (k['Pokemon']['pos'].split(","))
-            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
-            pokemons_List.append(pok)
-            flag = True
+        for i in range(len(dict['Pokemons'])):
+            for k in dict['Pokemons']:
+                n = (k['Pokemon']['pos'].split(","))
+                pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])),i)
+                pokemons_List.append(pok)
+
+                flag = True
         return flag
 
 
     load_from_pokemon_dict(pokemons2)
+
 
 
     for p in pokemons_List:
@@ -239,127 +244,106 @@ while client.is_running() == 'true':
     # refresh rate
     clock.tick(60)
 
+
     def line(pokemon):
 
-        for v in graph_Algo.get_graph().vertices.values():
-            for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):
-                m = (v.pos[1] - graph_Algo.get_graph().get_all_v()[e].pos[1]) / (v.pos[0] - graph_Algo.get_graph().get_all_v()[e].pos[0])
-                if graph_Algo.get_graph().get_all_v()[e].pos[1] == m * (graph_Algo.get_graph().get_all_v()[e].pos[0] - pokemon.pos[0]) + pokemon.pos[1]:
-                    return v.id, e
+        """
+
+        :param pokemon:
+        :return:
+        """
+        flag = True
+        for v in graph_Algo.get_graph().vertices.values():  ## here we get the node object
+            for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):  ## here we get
+                y2 = v.pos[1]
+                y1 = graph_Algo.get_graph().get_all_v()[e].pos[1]
+                x2 = v.pos[0]
+                x1 = graph_Algo.get_graph().get_all_v()[e].pos[0]
+                y3 = pokemon.pos[1]
+                x3 = pokemon.pos[0]
+                a = (y2 - y1) / (x2 - x1)
+                b = y1 - a * x1
+                if abs(y3 - (a * x3 + b)) < epsilon:
+                    if pokemon.type == -1:
+                        if v.id < e:
+                            return e, v.id
+                        if  e < v.id:
+                            return v.id, e
+                    if pokemon.type == 1:
+                        if v.id < e:
+                            return v.id, e
+                        if e < v.id:
+                            return e, v.id
         return -1
+
+
     # def line(pokemon):
     #
-    #     flag = True
-    #     for v in graph_Algo.get_graph().vertices.values():  ## here we get the node object
-    #         for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):  ## here we get all the edges are going out for curent vertex
-    #             x1 = graph_Algo.get_graph().get_all_v()[e].pos[0]
-    #             y1 = graph_Algo.get_graph().get_all_v()[e].pos[1]
-    #             x2 = v.pos[0]
-    #             y2 = v.pos[1]
-    #             x3 = pokemon.pos[0]
-    #             y3 = pokemon.pos[1]
-    #             crossproduct = (y3 - y1) * (x2 - x1) - (x3 - x1) * (y2 - y1)
-    #             if abs(crossproduct) > epsilon:
-    #                 flag = False
-    #             dotproduct = (x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)
-    #             if dotproduct < 0:
-    #                 flag = False
-    #             sqaurw = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)
-    #             if dotproduct > sqaurw:
-    #                 flag = False
-    #             if flag == True:
+    #     for v in graph_Algo.get_graph().vertices.values():
+    #         for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):
+    #             m = (v.pos[1] - graph_Algo.get_graph().get_all_v()[e].pos[1]) / (v.pos[0] - graph_Algo.get_graph().get_all_v()[e].pos[0])
+    #             if graph_Algo.get_graph().get_all_v()[e].pos[1] == m * (graph_Algo.get_graph().get_all_v()[e].pos[0] - pokemon.pos[0]) + pokemon.pos[1]:
     #                 return v.id, e
-    #             #
-    #             #
-    #             # m = abs(y2 - y1) / abs(x2 - x1)
-    #             # a = abs(y3 - y1)
-    #             # b = abs(m * (x3 - x1))
-    #             # if a == b:
-    #             #     return v.id, e
     #     return -1
 
+    def cost(p, a):
+        cost = -1
+        x, y = line(p)
+        if p.type == -1:
+            if x < y:
+                b, c = graph_Algo.shortest_path(a.src, y)
+                cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
+
+            if y < x:
+                b, c = graph_Algo.shortest_path(a.src, x)
+                cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
+        if p.type == 1:
+            if x < y:
+                b, c = graph_Algo.shortest_path(a.src, x)
+                cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
+            if y < x:
+                b, c = graph_Algo.shortest_path(a.src, y)
+                cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
+        return cost
     # choose next edge
     for agent in agents_list:
         if agent.dest == -1:
-            # pokemon = None
-            # cost = math.inf
-            # for p in pokemons:
-            #     if p.flag != 1:
-            #         if pokemon == None:
-            #             pokemon = p
-            #             cost = cost(p ,agent )
-            #
-            #         if cost(p,agent) < cost:
-            #             pokemon = p
-            #             cost = cost(p, agent)
-            # insert p to agent
-            # then flag p are inserted
-            for p in pokemons_List:
-                print("p.tag =",p.tag)
-                if p.tag == -1:
-                    zur,yana = line(p)
-                    if p.type == -1:
-                        if zur < yana:
-                            ab,ba = graph_Algo.shortest_path(agent.src,yana)
-                            a = 0
-                            if(a +1 < len(ba)):
-                                agent.next_node = ba[a + 1].id
-                                p.tag = 1
-                            else:
-                                agent.next_node = agent.src
 
-                        if yana < zur:
-                            ab, ba = graph_Algo.shortest_path(agent.src, zur)
-                            a = 0
-                            if (a + 1 < len(ba)):
-                                agent.next_node = ba[a + 1].id
-                                p.tag = 1
-                            else:
-                                agent.next_node = agent.src
-                    if p.type == 1:
-                        if zur < yana:
-                            ab,ba = graph_Algo.shortest_path(agent.src,zur)
-                            a = 0
-                            if (a + 1 < len(ba)):
-                                agent.next_node = ba[a + 1].id
-                                p.tag = 1
-                            else:
-                                agent.next_node = agent.src
-                        if yana < zur:
-                            ab, ba = graph_Algo.shortest_path(agent.src, yana)
-                            a = 0
-                            if (a + 1 < len(ba)):
-                                agent.next_node = ba[a + 1].id
-                                p.tag = 1
-                            else:
-                                agent.next_node = agent.src
-                    print("p.tag1 =",p.tag)
-                print("agent id = ",agent.id,"what? =" , agent.next_node)
+            cost1 = 99999999999999
+            temp_pokemons = None
+
+            for p in pokemons_List:
+
+                if p.tag == -1:
+                    if cost(p,agent) < cost1:
+                        cost1 = cost(p,agent)
+                        temp_pokemons = p
+
+
+
+            if temp_pokemons != None:
+                temp_pokemons.tag = 1
+                start_e, end_e = line(temp_pokemons)
+
+                boring,path = graph_Algo.shortest_path(agent.src,start_e)
+                path.append(end_e)
+                a = 1
+                agent.next_node = path[a]
+
+
+
                 client.choose_next_edge('{"agent_id":'+str(agent.id)+', "next_node_id":'+str(agent.next_node)+'}')
+                a += 1
+
                 ttl = client.time_to_end()
-                # print(ttl, client.get_info())
+
+    if int(ttl) <30:
+        print(client.get_info())
 
     client.move()
 
-def cost(p, a):
-    cost = -1
-    x, y = line(p)
-    if p.type == -1:
-        if x < y:
-            b, c = graph_Algo.shortest_path(a.src, y)
-            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
 
-        if y < x:
-            b, c = graph_algo.shortest_path(a.src, x)
-            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
-    if p.type == 1:
-        if x < y:
-            b, c = graph_Algo.shortest_path(a.src, x)
-            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(x).get(y)) / p.value
-        if y < x:
-            b, c = graph_Algo.shortest_path(a.src, y)
-            cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
-    return cost
+
 
 
 

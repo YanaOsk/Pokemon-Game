@@ -18,7 +18,7 @@ class Node:
 
 
     def __str__(self):
-        return f"{self.id},{self.pos}"
+        return f"{self.id}"
 
     def __repr__(self):
-        return f"{self.id},{self.pos}"
+        return f"{self.id}"

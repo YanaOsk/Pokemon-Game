@@ -2,7 +2,8 @@ from filecmp import cmp
 
 class pokimon:
 
-    def __init__(self,value : float,type : int,pos : tuple):
+    def __init__(self,value : float,type : int,pos : tuple,id : int):
+        self.id = id
         self.value = value
         self.type = type
         self.pos = pos
