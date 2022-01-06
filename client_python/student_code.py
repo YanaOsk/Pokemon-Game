@@ -175,9 +175,8 @@ while client.is_running() == 'true':
             for k in dict['Pokemons']:
                 n = (k['Pokemon']['pos'].split(","))
                 pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])),i)
-                pokemons_List.append(pok)
-
                 flag = True
+            pokemons_List.append(pok)
         return flag
 
 
@@ -247,6 +246,10 @@ while client.is_running() == 'true':
         rect = id_srf.get_rect(center=(x, y))
         screen.blit(id_srf, rect)
 
+
+
+
+
     # draw edges
     for v in graph_Algo.get_graph().vertices:
         for e in graph_Algo.get_graph().all_out_edges_of_node(v):
@@ -270,12 +273,15 @@ while client.is_running() == 'true':
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
     for p in pokemons_List:
         pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
+        id_srf_pok = FONT.render(str(p.id), True, Color(0, 0, 0))
+        rect = id_srf_pok.get_rect(center=(int(p.show_pos[0]), int(p.show_pos[1])))
+        screen.blit(id_srf_pok, rect)
 
     # update screen changes
     display.update()
 
     # refresh rate
-    clock.tick(60)
+    clock.tick(10)
 
 
 
