@@ -278,8 +278,10 @@ while client.is_running() == 'true':
         pygame.draw.circle(screen, Color(122, 61, 23), (int(a.show_pos[0]), int(a.show_pos[1])), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
     for p in pokemons_List:
-
-        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
+        if p.type == -1:
+            pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
+        if p.type == 1:
+            pygame.draw.circle(screen, Color(255, 0, 0), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
 
 
     # update screen changes
