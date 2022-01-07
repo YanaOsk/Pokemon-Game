@@ -1,5 +1,5 @@
 import copy
-from NodeData import Node
+from client_python.NodeData import Node
 
 
 class DiGraph:
