@@ -6,8 +6,8 @@ import pygame
 from pygame import Color, gfxdraw
 from pygame.constants import RESIZABLE
 from typing import List
-from NodeData import Node
-from DiGraph import DiGraph
+from client_python.NodeData import Node
+from client_python.DiGraph import DiGraph
 import json
 from itertools import permutations
 

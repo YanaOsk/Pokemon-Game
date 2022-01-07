@@ -11,6 +11,9 @@ class agent1:
         self.pos = pos
         self.show_pos = pos
         self.next_node = src
+        self.path = []
+        self.curent_path = 0
+        self.tag = -1
 
     def __str__(self):
         return f"{self.id},{self.value},{self.speed},{self.pos}"
