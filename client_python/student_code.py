@@ -164,7 +164,6 @@ The GUI and the "algo" are mixed - refactoring using MVC design pattern is requi
 # print(zur1)
 
 
-
 while client.is_running() == 'true':
     pokemons_List = []
     pokemons = client.get_pokemons()
