@@ -50,7 +50,7 @@ clock = pygame.time.Clock()
 pygame.font.init()
 pok_image = pygame.image.load('pokpok.png')
 
-
+ ##commit only for save
 counter, text = 30, '30'.rjust(3)
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
@@ -58,6 +58,7 @@ font = pygame.font.SysFont('Consolas', 30)
 
 client = Client()
 client.start_connection(HOST, PORT)
+
 
 """
 pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
@@ -171,12 +172,14 @@ while client.is_running() == 'true':
 
     def load_from_pokemon_dict(dict: dict) -> bool:
         flag = False
-        for i in range(len(dict['Pokemons'])):
-            for k in dict['Pokemons']:
-                n = (k['Pokemon']['pos'].split(","))
-                pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])),i)
-                flag = True
-            pokemons_List.append(pok)
+        pok_id = 0
+        for k in dict['Pokemons']:
+            n = (k['Pokemon']['pos'].split(","))
+            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])),pok_id)
+            pok_id+=1
+            flag = True
+
+        pokemons_List.append(pok)
         return flag
 
 
@@ -213,7 +216,8 @@ while client.is_running() == 'true':
     for event in pygame.event.get():
         if event.type == pygame.USEREVENT:
             counter -= 1
-            text = str(counter).rjust(3) if counter > 0 else '  Game Over'
+            text = str(counter).rjust(3) if client.is_running() else ' Game Over'
+
         if event.type == pygame.QUIT:
             pygame.quit()
             exit(0)
@@ -272,6 +276,7 @@ while client.is_running() == 'true':
         pygame.draw.circle(screen, Color(122, 61, 23), (int(a.show_pos[0]), int(a.show_pos[1])), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
     for p in pokemons_List:
+
         pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
         id_srf_pok = FONT.render(str(p.id), True, Color(0, 0, 0))
         rect = id_srf_pok.get_rect(center=(int(p.show_pos[0]), int(p.show_pos[1])))
@@ -281,7 +286,7 @@ while client.is_running() == 'true':
     display.update()
 
     # refresh rate
-    clock.tick(10)
+    clock.tick(5)
 
 
 
