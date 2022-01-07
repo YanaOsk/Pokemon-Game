@@ -3,7 +3,6 @@
 OOP - Ex4
 Very simple GUI example for python client to communicates with the server and "play the game!"
 """
-from math import *
 import math
 from types import SimpleNamespace
 from fontTools.misc.bezierTools import epsilon
@@ -15,6 +14,26 @@ from pygame import *
 from GraphAlgo import GraphAlgo
 from pokimon import pokimon
 from agent import agent1
+
+
+####################### C L A S S    B U T T O N #########################
+class Button:
+    def __init__(self, rect: pygame.Rect, color, text, func=None):
+        self.rect = rect
+        self.color = color
+        self.text = text
+        self.func = func
+
+        self.is_clicked = False
+
+    def press(self):
+        self.is_clicked = not self.is_clicked
+
+
+button = Button(pygame.Rect((900, 650), (150, 50)), (250, 0, 0), "Stop the game")
+##########################################################################
+
+
 
 
 # init pygame
@@ -29,11 +48,16 @@ pygame.init()
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
 clock = pygame.time.Clock()
 pygame.font.init()
+pok_image = pygame.image.load('pokpok.png')
+
+ ##commit only for save
+counter, text = 30, '30'.rjust(3)
+pygame.time.set_timer(pygame.USEREVENT, 1000)
+font = pygame.font.SysFont('Consolas', 30)
+
 
 client = Client()
 client.start_connection(HOST, PORT)
-
-
 
 
 """
@@ -42,7 +66,7 @@ pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
 
 graph_json = client.get_graph()
 
-FONT = pygame.font.SysFont('Arial', 20, bold=True)
+FONT = pygame.font.SysFont('comicsansms', 20, bold=True)
 # load the json string into SimpleNamespace Object
 
 graph = json.loads(graph_json)
@@ -50,9 +74,10 @@ graph_Algo = GraphAlgo()
 graph_Algo.load_from_dict(graph)
 start = graph_Algo.centerPoint().id
 
+print("graph_Algo = ", graph_Algo)
 
 for n in graph_Algo.get_graph().vertices.values():
-    x, y= n.pos
+    x, y = n.pos
     n.pos = (float(x), float(y))
 
 
@@ -86,13 +111,13 @@ def max_y():
         if i.pos[1] > max_y:
             max_y = i.pos[1]
     return max_y
- # get data proportions
+
+
+# get data proportions
 min_x = min_x()
 min_y = min_y()
 max_x = max_x()
 max_y = max_y()
-
-
 
 
 def scale(data, min_screen, max_screen, min_data, max_data):
@@ -100,7 +125,7 @@ def scale(data, min_screen, max_screen, min_data, max_data):
     get the scaled data with proportions min_data, max_data
     relative to min and max screen dimentions
     """
-    return ((data - min_data) / (max_data-min_data)) * (max_screen - min_screen) + min_screen
+    return ((data - min_data) / (max_data - min_data)) * (max_screen - min_screen) + min_screen
 
 
 # decorate scale with the correct values
@@ -109,20 +134,19 @@ def my_scale(data, x=False, y=False):
     if x:
         return scale(data, 50, screen.get_width() - 50, min_x, max_x)
     if y:
-        return scale(data, 50, screen.get_height()-50, min_y, max_y)
+        return scale(data, 50, screen.get_height() - 50, min_y, max_y)
 
 
 radius = 15
-
 
 dict3 = json.loads(client.get_info())
 
 numOfAgent = dict3['GameServer']['agents']
 
 for i in range(numOfAgent):
-    c = "{\"id\":" + str(start+i) + "}"
-    client.add_agent(c)
 
+    c = "{\"id\":" + str(start) + "}"
+    client.add_agent(c)
 
 # this commnad starts the server - the game is running now
 client.start()
@@ -131,37 +155,37 @@ client.start()
 The code below should be improved significantly:
 The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
 """
+
+
 # print(type(client.get_agents()))
 # print(type(client.get_graph()))
 
 # print("zur1: ",type(zur1))
 # print(zur1)
 
+
+
 while client.is_running() == 'true':
-
-
     pokemons_List = []
     pokemons = client.get_pokemons()
     pokemons2 = json.loads(pokemons)
 
 
-
-
     def load_from_pokemon_dict(dict: dict) -> bool:
         flag = False
-        for i in range(len(dict['Pokemons'])):
-            for k in dict['Pokemons']:
-                n = (k['Pokemon']['pos'].split(","))
-                pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])),i)
-                pokemons_List.append(pok)
+        pok_id = 0
+        for k in dict['Pokemons']:
+            n = (k['Pokemon']['pos'].split(","))
+            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
+            pok_id+=1
+            flag = True
+            pokemons_List.append(pok)
 
-                flag = True
+
         return flag
 
 
     load_from_pokemon_dict(pokemons2)
-
-
 
     for p in pokemons_List:
         x, y = p.pos
@@ -170,12 +194,14 @@ while client.is_running() == 'true':
     agents_list = []
     agents = client.get_agents()
     agents2 = json.loads(agents)
+
+
     def load_from_agent_dict(dict: dict) -> bool:
         flag = False
         for k in dict['Agents']:
-
             n = (k['Agent']['pos'].split(","))
-            age = agent1(k['Agent']['id'], k['Agent']['value'],k['Agent']['src'],k['Agent']['dest'],k['Agent']['speed'], (float(n[0]), float(n[1])))
+            age = agent1(k['Agent']['id'], k['Agent']['value'], k['Agent']['src'], k['Agent']['dest'],
+                         k['Agent']['speed'], (float(n[0]), float(n[1])))
 
             agents_list.append(age)
             flag = True
@@ -190,12 +216,25 @@ while client.is_running() == 'true':
 
     # check events
     for event in pygame.event.get():
+        if event.type == pygame.USEREVENT:
+            counter -= 1
+            text = str(counter).rjust(3) if client.is_running() else ' Game Over'
+
         if event.type == pygame.QUIT:
             pygame.quit()
             exit(0)
-
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if button.rect.collidepoint(event.pos):
+                button.func=client.stop_connection()
     # refresh surface
-    screen.fill(Color(0, 0, 0))
+    screen.fill(Color(243, 233, 0))
+    screen.blit(pok_image, (300, 10))
+    pygame.draw.rect(screen, button.color, button.rect)
+    button_text=FONT.render(button.text,True,(0,0,0))
+    text_to_end = FONT.render('Time to end :', True, (0, 0, 0))
+    screen.blit(button_text,(button.rect.x+6,button.rect.y+6))
+    screen.blit(font.render(text, True, (0, 0, 0)), (150, 40))
+    screen.blit(text_to_end,(30,40))
 
     # draw nodes
     for n in graph_Algo.get_graph().vertices.values():
@@ -212,6 +251,10 @@ while client.is_running() == 'true':
         id_srf = FONT.render(str(n.id), True, Color(255, 255, 255))
         rect = id_srf.get_rect(center=(x, y))
         screen.blit(id_srf, rect)
+
+
+
+
 
     # draw edges
     for v in graph_Algo.get_graph().vertices:
@@ -232,23 +275,24 @@ while client.is_running() == 'true':
 
     # draw agents
     for a in agents_list:
-        pygame.draw.circle(screen, Color(122, 61, 23),(int(a.show_pos[0]), int(a.show_pos[1])), 10)
+        pygame.draw.circle(screen, Color(122, 61, 23), (int(a.show_pos[0]), int(a.show_pos[1])), 10)
     # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
     for p in pokemons_List:
 
         pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
 
+
     # update screen changes
     display.update()
 
     # refresh rate
-    clock.tick(60)
+    clock.tick(5)
+
 
 
     def line(pokemon):
 
         """
-
         :param pokemon:
         :return:
         """
@@ -276,15 +320,6 @@ while client.is_running() == 'true':
                             return e, v.id
         return -1
 
-
-    # def line(pokemon):
-    #
-    #     for v in graph_Algo.get_graph().vertices.values():
-    #         for e in graph_Algo.get_graph().all_out_edges_of_node(v.id):
-    #             m = (v.pos[1] - graph_Algo.get_graph().get_all_v()[e].pos[1]) / (v.pos[0] - graph_Algo.get_graph().get_all_v()[e].pos[0])
-    #             if graph_Algo.get_graph().get_all_v()[e].pos[1] == m * (graph_Algo.get_graph().get_all_v()[e].pos[0] - pokemon.pos[0]) + pokemon.pos[1]:
-    #                 return v.id, e
-    #     return -1
 
     def cost(p, a):
         cost = -1
@@ -341,18 +376,3 @@ while client.is_running() == 'true':
         print(client.get_info())
 
     client.move()
-
-
-
-
-
-
-
-
-
-
-
-
-
-# game over:
-
