@@ -105,6 +105,9 @@ At first we set up the screen and activated the client and made the Button class
  
  You can run our algorithm with the jar file , we made for you.
  
+ ## Uml Diagram
+ The uml diagram yu can find in the client_python directory ,named "py.uml"
+ 
  ### Look at the  picture of the game and link to a video clip :
  
 <img src="https://user-images.githubusercontent.com/69717074/148644427-a804d090-d438-40b7-9b45-fba7989723fc.png" width="600">
