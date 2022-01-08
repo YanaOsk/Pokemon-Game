@@ -1,10 +1,4 @@
-"""
-@author AchiyaZigi
-OOP - Ex4
-Very simple GUI example for python client to communicates with the server and "play the game!"
-"""
 import math
-from types import SimpleNamespace
 from fontTools.misc.bezierTools import epsilon
 from client import Client
 import json
@@ -18,7 +12,7 @@ from agent import agent1
 
 ####################### C L A S S    B U T T O N #########################
 class Button:
-    def __init__(self, rect: pygame.Rect, color, text, func=None):
+    def __init__(self, rect: pygame.Rect, color, text, flags, func=None):
         self.rect = rect
         self.color = color
         self.text = text
@@ -30,15 +24,12 @@ class Button:
         self.is_clicked = not self.is_clicked
 
 
-button = Button(pygame.Rect((900, 650), (150, 50)), (250, 0, 0), "Stop the game")
+button = Button(pygame.Rect((900, 650), (150, 50)), (250, 0, 0), "Stop the game", flags=RESIZABLE)
 ##########################################################################
-
-
 
 
 # init pygame
 WIDTH, HEIGHT = 1080, 720
-
 # default port
 PORT = 6666
 # server host (default localhost 127.0.0.1)
@@ -48,33 +39,21 @@ pygame.init()
 screen = display.set_mode((WIDTH, HEIGHT), depth=32, flags=RESIZABLE)
 clock = pygame.time.Clock()
 pygame.font.init()
-pok_image = pygame.image.load('pokpok.png')
 
- ##commit only for save
-counter, text = 30, '30'.rjust(3)
+pok_image = pygame.image.load('pokpok.png')
+center_image = (WIDTH / 2, HEIGHT / 2)
+counter, text = 0, '0'.rjust(3)
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
-
-
 client = Client()
 client.start_connection(HOST, PORT)
-
-
-"""
-pokemons_obj = json.loads(pokemons, object_hook=lambda d: SimpleNamespace(**d))
-"""
-
 graph_json = client.get_graph()
-
 FONT = pygame.font.SysFont('comicsansms', 20, bold=True)
 # load the json string into SimpleNamespace Object
-
 graph = json.loads(graph_json)
 graph_Algo = GraphAlgo()
 graph_Algo.load_from_dict(graph)
 start = graph_Algo.centerPoint().id
-
-print("graph_Algo = ", graph_Algo)
 
 for n in graph_Algo.get_graph().vertices.values():
     x, y = n.pos
@@ -144,25 +123,11 @@ dict3 = json.loads(client.get_info())
 numOfAgent = dict3['GameServer']['agents']
 
 for i in range(numOfAgent):
-    c = "{\"id\":" + str(start + i) + "}"
+    c = "{\"id\":" + str(start) + "}"
     client.add_agent(c)
 
 # this commnad starts the server - the game is running now
 client.start()
-
-"""
-The code below should be improved significantly:
-The GUI and the "algo" are mixed - refactoring using MVC design pattern is required.
-"""
-
-
-# print(type(client.get_agents()))
-# print(type(client.get_graph()))
-
-# print("zur1: ",type(zur1))
-# print(zur1)
-
-
 
 while client.is_running() == 'true':
     pokemons_List = []
@@ -174,12 +139,11 @@ while client.is_running() == 'true':
         flag = False
         pok_id = 0
         for k in dict['Pokemons']:
-            n = (k['Pokemon']['pos'].split(","))
-            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])),pok_id)
-            pok_id+=1
+            n = (k['Pokemon']['pos'].split(','))
+            pok = pokimon(k['Pokemon']['value'], k['Pokemon']['type'], (float(n[0]), float(n[1])))
+            pok_id += 1
             flag = True
-
-        pokemons_List.append(pok)
+            pokemons_List.append(pok)
         return flag
 
 
@@ -197,7 +161,7 @@ while client.is_running() == 'true':
     def load_from_agent_dict(dict: dict) -> bool:
         flag = False
         for k in dict['Agents']:
-            n = (k['Agent']['pos'].split(","))
+            n = (k['Agent']['pos'].split(','))
             age = agent1(k['Agent']['id'], k['Agent']['value'], k['Agent']['src'], k['Agent']['dest'],
                          k['Agent']['speed'], (float(n[0]), float(n[1])))
 
@@ -215,24 +179,27 @@ while client.is_running() == 'true':
     # check events
     for event in pygame.event.get():
         if event.type == pygame.USEREVENT:
-            counter -= 1
+            counter += 1
             text = str(counter).rjust(3) if client.is_running() else ' Game Over'
-
+        if event.type == pygame.VIDEORESIZE:
+            WIDTH, HEIGHT = event.dict["size"]
+            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+            center_image = (WIDTH / 2, HEIGHT / 2)
         if event.type == pygame.QUIT:
             pygame.quit()
             exit(0)
         if event.type == pygame.MOUSEBUTTONDOWN:
             if button.rect.collidepoint(event.pos):
-                button.func=client.stop_connection()
-    # refresh surface
+                button.func = client.stop()
+
     screen.fill(Color(243, 233, 0))
     screen.blit(pok_image, (300, 10))
     pygame.draw.rect(screen, button.color, button.rect)
-    button_text=FONT.render(button.text,True,(0,0,0))
-    text_to_end = FONT.render('Time to end :', True, (0, 0, 0))
-    screen.blit(button_text,(button.rect.x+6,button.rect.y+6))
+    button_text = FONT.render(button.text, True, (0, 0, 0))
+    text_to_end = FONT.render('Game timer :', True, (0, 0, 0))
+    screen.blit(button_text, (button.rect.x + 6, button.rect.y + 6))
     screen.blit(font.render(text, True, (0, 0, 0)), (150, 40))
-    screen.blit(text_to_end,(30,40))
+    screen.blit(text_to_end, (30, 40))
 
     # draw nodes
     for n in graph_Algo.get_graph().vertices.values():
@@ -249,10 +216,6 @@ while client.is_running() == 'true':
         id_srf = FONT.render(str(n.id), True, Color(255, 255, 255))
         rect = id_srf.get_rect(center=(x, y))
         screen.blit(id_srf, rect)
-
-
-
-
 
     # draw edges
     for v in graph_Algo.get_graph().vertices:
@@ -274,20 +237,22 @@ while client.is_running() == 'true':
     # draw agents
     for a in agents_list:
         pygame.draw.circle(screen, Color(122, 61, 23), (int(a.show_pos[0]), int(a.show_pos[1])), 10)
-    # draw pokemons (note: should differ (GUI wise) between the up and the down pokemons (currently they are marked in the same way).
-    for p in pokemons_List:
+        id_srf_agent = FONT.render(str(a.id), True, Color(255, 255, 255))
 
-        pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
-        id_srf_pok = FONT.render(str(p.id), True, Color(0, 0, 0))
-        rect = id_srf_pok.get_rect(center=(int(p.show_pos[0]), int(p.show_pos[1])))
-        screen.blit(id_srf_pok, rect)
+        rect = id_srf_agent.get_rect(center=(int(a.show_pos[0]), int(a.show_pos[1])))
+        screen.blit(id_srf_agent, rect)
+    # draw pokemons
+    for p in pokemons_List:
+        if p.type == -1:
+            pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
+        if p.type == 1:
+            pygame.draw.circle(screen, Color(255, 0, 0), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
 
     # update screen changes
     display.update()
 
     # refresh rate
     clock.tick(5)
-
 
 
     def line(pokemon):
@@ -311,7 +276,7 @@ while client.is_running() == 'true':
                     if pokemon.type == -1:
                         if v.id < e:
                             return e, v.id
-                        if  e < v.id:
+                        if e < v.id:
                             return v.id, e
                     if pokemon.type == 1:
                         if v.id < e:
@@ -340,39 +305,32 @@ while client.is_running() == 'true':
                 b, c = graph_Algo.shortest_path(a.src, y)
                 cost = (b + graph_Algo.get_graph().all_out_edges_of_node(y).get(x)) / p.value
         return cost
+
+
     # choose next edge
     for agent in agents_list:
+        i=1
         if agent.dest == -1:
-
             cost1 = 99999999999999
             temp_pokemons = None
-
             for p in pokemons_List:
-
+                print("The src and dest of pok ",p.value," is ",line(p))
                 if p.tag == -1:
-                    if cost(p,agent) < cost1:
-                        cost1 = cost(p,agent)
+                    if cost(p, agent) < cost1:
+                        cost1 = cost(p, agent)
                         temp_pokemons = p
-
-
 
             if temp_pokemons != None:
                 temp_pokemons.tag = 1
                 start_e, end_e = line(temp_pokemons)
 
-                boring,path = graph_Algo.shortest_path(agent.src,start_e)
+                boring, path = graph_Algo.shortest_path(agent.src, start_e)
                 path.append(end_e)
                 a = 1
                 agent.next_node = path[a]
 
-
-
-                client.choose_next_edge('{"agent_id":'+str(agent.id)+', "next_node_id":'+str(agent.next_node)+'}')
+                client.choose_next_edge(
+                    '{"agent_id":' + str(agent.id) + ', "next_node_id":' + str(agent.next_node) + '}')
                 a += 1
-
                 ttl = client.time_to_end()
-
-    if int(ttl) <30:
-        print(client.get_info())
-
     client.move()

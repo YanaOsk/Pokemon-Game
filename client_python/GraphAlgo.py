@@ -6,8 +6,8 @@ import pygame
 from pygame import Color, gfxdraw
 from pygame.constants import RESIZABLE
 from typing import List
-from NodeData import Node
-from DiGraph import DiGraph
+from client_python.NodeData import Node
+from client_python.DiGraph import DiGraph
 import json
 from itertools import permutations
 
@@ -31,7 +31,7 @@ class GraphAlgo:
             #     graph = DiGraph()
             #     dict = json.load(f)
                 for k in dict['Nodes']:
-                    n = (k['pos'].split(","))
+                    n = (k['pos'].split(','))
                     node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
                     self.graph.add_node(node_id = node.id, pos = node.pos)
                 for e in dict['Edges']:
