@@ -34,7 +34,7 @@ Contains the constructor that builds the graph through the DiGraph class
 |Function name | Explanation |
 |--------------|-------------|
 | get_ graph | A function that returns the graph |
-| load_from_json | A function that loads a json file and converts it to an object through a dictionary. We referred to the condition of a T0 file, which has nothing in it except the id of the vertex, which knew how to accept such files as well and create objects from them. |
+| load_from_dict | A function that loads a dictionary and converts it to an object |
 | save_to_json  | A function that saves us the graph for a new json file. In its operation each time overwrites the previous file. |
 | shortest_path | A function that calculates for us the shortest route from source vertex to destination vertex. We used the dijkstra algorithm which is detailed below. |
 | tsp | A function that calculates for us the shortest path to pass between all vertices, we used it in the FloydWarshall algorithm which we will explain later. |
@@ -48,6 +48,13 @@ Also we created Node class, that holds node object.
 There is a constructor that gets id, pos, tag, weight, inEdges, outEdges
 Since we did not have an edge object, we used vertex information with the dictionaries.
 pos , tag and weight - have default values in the constructor.
+
+
+
+ # Explanation of the algorithm 
+ 
+ In our algorithm , we are mostly using the center and shortest path algorithms.
+ At first we put the agents on the center node , because we know , that from this vertex there is the shortest way to get to the rest of the vertices . Then , we are pass in for loop throw all the agents we have and calculates the paths to the pokemons by the shortest path algorithm from the src of the agent to pokemon src/dest ( it depends on whether a Pokemon is on a rising or falling edge). The shortest path returns us the cost of the path and the path itself , we are checking by the cost function if the path is the cheapest or not and moving by the path that was returned for us from the shortest path function. Pokemon that is on up edge has a Red color and pokemon that on down edge has a blue color. 
 
 ## Client 
 The client class includes functions that connect with the server , each function in it ,when using it , sends a message to a server and executes the commands of a game.
@@ -72,7 +79,6 @@ The client class includes functions that connect with the server , each function
 
 
 ## Student_code 
-At first we set up the screen and activated the client and made the Button class 'there we only made a conctructor and press function for the button that will stop the game.
 
 |Function name | Explanation |
 |--------------|-------------|
@@ -80,13 +86,17 @@ At first we set up the screen and activated the client and made the Button class
 | scale , my_scale | these functions have a formula fr the resolution, there we used the highest and the lowest points |
 | load_from_pokemon_dict | the function that load the pokemns from a dictionary and converts them to the pokemn object |
 | load_from_agent_dict | exactle the same function that load from a dictionary and convert to the agent object |
+
+
+## Button class 
+The class is creating an bject of button, it includes only constructor and press function, which will stop the game in every moment.
+
+## Cost class
+
+|Function name | Explanation |
+|--------------|-------------|
 | line | the function that cheks on which edge exactly the pokemon is and returns us the src and the dest of this edge |
 | cost | this function checks ,which path will be the cheapest for the agent to go to come pokemon and return the cost |
- 
- ## Explanation of the algorithm 
- 
- In our algorithm , we are mostly using the center and shortest path algorithms.
- At first we put the agents on the center node , because we know , that from this vertex there is the shortest way to get to the rest of the vertices . Then , we are pass in for loop throw all the agents we have and calculates the paths to the pokemons by the shortest path algorithm from the src of the agent to pokemon src/dest ( it depends on whether a Pokemon is on a rising or falling edge). The shortest path returns us the cost of the path and the path itself , we are checking by the cost function if the path is the cheapest or not and moving by the path that was returned for us from the shortest path function. Pokemon that is on up edge has a Red color and pokemon that on down edge has a blue color. 
  
  Also we signed in different colors , different pokemons and signed different agents by their own id numbers.
  
