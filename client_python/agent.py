@@ -16,7 +16,7 @@ class agent1:
         self.tag = -1
 
     def __str__(self):
-        return f"{self.id},{self.value},{self.speed},{self.pos}"
+        return f"{self.id},{self.value},{self.src},{self.dest},{self.speed},{self.pos}"
 
     def __repr__(self):
-        return f"{self.id},{self.value},{self.speed},{self.pos}"
+        return f"{self.id},{self.value},{self.src},{self.dest},{self.speed},{self.pos}"

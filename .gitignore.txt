@@ -1,0 +1,5 @@
+pyvenv.cfg
+share/man/man1
+include/site/python3.10/pygame
+Scripts
+Lib/site-packages

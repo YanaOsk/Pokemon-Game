@@ -34,11 +34,13 @@ class GraphAlgo:
 
                     n = (k['pos'].split(","))
                     node = Node(k['id'], (float(n[0]), float(n[1])), float(n[2]))
+                    # print("graph.add_node(node_id=",node.id, "pos=",node.pos,")")
                     self.graph.add_node(node_id = node.id, pos = node.pos)
                 for e in dict['Edges']:
                     src = e['src']
                     dest = e['dest']
                     weight = e['w']
+                    # print("graph.add_edge(",src,",",dest,",",weight,")")
                     self.graph.add_edge(src, dest, weight)
                 flag = True
         except IOError as e:

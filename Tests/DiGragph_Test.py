@@ -1,10 +1,18 @@
 from unittest import TestCase
 from client_python.NodeData import Node
 from client_python.DiGraph import DiGraph
+from client_python.GraphAlgo import GraphAlgo
+from client_python.pokimon import pokimon
+from client_python.agent import agent1
+from client_python.cost import cost_line
 
 
 class TestDiGraph(TestCase):
+
     size = 10
+
+    class Teststudent_code(TestCase):
+        graphAlgo = GraphAlgo()
 
     def making_a_graph_VN(self):
         graph = DiGraph()
@@ -105,6 +113,9 @@ class TestDiGraph(TestCase):
         graph.remove_node(12)
         graph.remove_node(13)
         self.assertTrue(graph.v_size() == 9)
+
+
+
 
     # def test_remove_edge(self):
     #     self.fail()
