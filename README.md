@@ -117,7 +117,8 @@ The class is creating an bject of button, it includes only constructor and press
  
  ## Uml Diagram
  
-![py](https://user-images.githubusercontent.com/69717074/148685366-cabb6ec7-23b2-4a9d-b7c1-5877ea862f20.png)
+![GraphAlgo](https://user-images.githubusercontent.com/69717074/148691023-2293609e-8308-454c-b1d5-0c32db761ca2.png)
+
  
 
 
