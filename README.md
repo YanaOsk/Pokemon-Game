@@ -79,14 +79,14 @@ At first we set up the screen and activated the client and made the Button class
 | min_x,min_y,max_x,max_y | we made these funcions , for the resolution of the screen ,we took the highest point and the lowest point of the graph , for the ability to make a "zoom in " on the screen because the coordinates of the points were too near to each other |
 | scale , my_scale | these functions have a formula fr the resolution, there we used the highest and the lowest points |
 | load_from_pokemon_dict | the function that load the pokemns from a dictionary and converts them to the pokemn object |
-| load_from_agent_dict | exactle the same function that load from a dictionary and cnver to the agent object |
+| load_from_agent_dict | exactle the same function that load from a dictionary and convert to the agent object |
 | line | the function that cheks on which edge exactly the pokemon is and returns us the src and the dest of this edge |
 | cost | this function checks ,which path will be the cheapest for the agent to go to come pokemon and return the cost |
  
  ## Explanation of the algorithm 
  
  In our algorithm , we are mostly using the center and shortest path algorithms.
- At first we put the agents on the center node , because we know , that from this vertex there is the shortest way to get to the rest of the vertices . Then , we are pass in for loop throw all the agents we have and calculates the paths to the pokemons by the shortest path algorithm from the src of the agent to pokemon src/dest ( it depends on whether a Pokemon is on a rising or falling edge). The shortest path returns us the cost of the path and the path itself , we are checking by the cost function if the path is the cheapest or not and moving by the path that was returned for us from the shortest path function.
+ At first we put the agents on the center node , because we know , that from this vertex there is the shortest way to get to the rest of the vertices . Then , we are pass in for loop throw all the agents we have and calculates the paths to the pokemons by the shortest path algorithm from the src of the agent to pokemon src/dest ( it depends on whether a Pokemon is on a rising or falling edge). The shortest path returns us the cost of the path and the path itself , we are checking by the cost function if the path is the cheapest or not and moving by the path that was returned for us from the shortest path function. Pokemon that is on up edge has a Red color and pokemon that on down edge has a blue color. 
  
  Also we signed in different colors , different pokemons and signed different agents by their own id numbers.
  
