@@ -103,7 +103,7 @@ At first we set up the screen and activated the client and made the Button class
  ## Tests 
  We made a test for the classes , you can check in "Tests" directory .
  
- You can run our algorithm with the jar file , we made for you.
+ You can run our algorithm with the release , we made for you.
  
  ## Uml Diagram
  
