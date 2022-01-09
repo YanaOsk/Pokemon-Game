@@ -307,7 +307,7 @@ while client.is_running() == 'true':
         return cost
 
 
-    # choose next edge
+    # choose next edge!
     for agent in agents_list:
         i=1
         if agent.dest == -1:
