@@ -8,20 +8,11 @@ from pygame import *
 from GraphAlgo import GraphAlgo
 from pokimon import pokimon
 from agent import agent1
+from Button import Button
 
 
 ####################### C L A S S    B U T T O N #########################
-class Button:
-    def __init__(self, rect: pygame.Rect, color, text, flags, func=None):
-        self.rect = rect
-        self.color = color
-        self.text = text
-        self.func = func
 
-        self.is_clicked = False
-
-    def press(self):
-        self.is_clicked = not self.is_clicked
 
 
 button = Button(pygame.Rect((900, 650), (150, 50)), (250, 0, 0), "Stop the game", flags=RESIZABLE)
