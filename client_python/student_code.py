@@ -1,4 +1,3 @@
-import math
 from fontTools.misc.bezierTools import epsilon
 from client import Client
 import json
@@ -8,15 +7,13 @@ from pygame import *
 from GraphAlgo import GraphAlgo
 from pokimon import pokimon
 from agent import agent1
-from Button import Button
+from client_python.Button import Button
 
 
-####################### C L A S S    B U T T O N #########################
 
 
 
 button = Button(pygame.Rect((900, 650), (150, 50)), (250, 0, 0), "Stop the game", flags=RESIZABLE)
-##########################################################################
 
 
 # init pygame
