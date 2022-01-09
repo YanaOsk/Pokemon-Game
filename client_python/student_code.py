@@ -243,7 +243,7 @@ while client.is_running() == 'true':
     # refresh rate
     clock.tick(5)
 
-    # choose next edge
+    # choose next edge!
     for agent in agents_list:
         i=1
         if agent.dest == -1:
