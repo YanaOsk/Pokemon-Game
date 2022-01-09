@@ -156,6 +156,7 @@ class Teststudent_code(TestCase):
         graph.add_edge(39, 10, 0.7421323463930005)
 
         return graph
+    #
 
     def test_cost(self):
         graph = self.making_a_graph()
