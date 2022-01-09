@@ -227,15 +227,18 @@ while client.is_running() == 'true':
     for a in agents_list:
         pygame.draw.circle(screen, Color(122, 61, 23), (int(a.show_pos[0]), int(a.show_pos[1])), 10)
         id_srf_agent = FONT.render(str(a.id), True, Color(255, 255, 255))
-
         rect = id_srf_agent.get_rect(center=(int(a.show_pos[0]), int(a.show_pos[1])))
         screen.blit(id_srf_agent, rect)
     # draw pokemons
     for p in pokemons_List:
         if p.type == -1:
             pygame.draw.circle(screen, Color(0, 255, 255), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
+
         if p.type == 1:
             pygame.draw.circle(screen, Color(255, 0, 0), (int(p.show_pos[0]), int(p.show_pos[1])), 10)
+        id_srf_pokimon = FONT.render("value = " + str(p.value), True, Color(0, 0, 0))
+        rect = id_srf_pokimon.get_rect(center=(int(p.show_pos[0]), int(p.show_pos[1])))
+        screen.blit(id_srf_pokimon, rect)
 
     # update screen changes
     display.update()
